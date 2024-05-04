@@ -1,0 +1,97 @@
+version: "3"
+x-airflow-common:
+    &airflow-common
+    build: ./Docker/airflow-celery-image/.
+    environment:
+        - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+        - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+        - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+        - AIRFLOW__CORE__LOAD_EXAMPLES=False
+        - AIRFLOW__CELERY__BROKER_URL=redis://redis:6379/0
+        - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://postgres:postgres@postgres:5432/airflow
+        - AIRFLOW__CORE__LOGGING_LEVEL=INFO
+    volumes:
+        - ./dags:/opt/airflow/dags
+        - ./airflow-data/logs:/opt/airflow/logs
+        - ./airflow-data/plugins:/opt/airflow/plugins
+        - ./airflow-data/airflow.cfg:/opt/airlfow/airflow.cfg
+    depends_on:
+        redis:
+            condition: service_healthy
+        postgres:
+            condition: service_healthy
+
+
+services:
+    redis:
+        image: redis:7.2.4
+        ports:
+        - "6379:6379"
+        container_name: redis
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 30s
+            retries: 50
+        restart: always
+    
+    postgres:
+        image: postgres:12.18
+        container_name: postgres
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=airflow
+            - POSTGRES_PORT=5432
+        ports:
+            - "5432:5432"
+        healthcheck:
+            test: ["CMD", "pg_isready", "-U", "airflow"]
+            interval: 5s
+            retries: 5
+    
+    airflow-init:
+        <<: *airflow-common
+        container_name: airflow_init
+        entrypoint: /bin/bash
+        command:
+        - -c
+        - airflow db init &&
+            airflow users create
+            --role Admin
+            --username airflow
+            --password airflow
+            --email airflow@airflow.com
+            --firstname airflow
+            --lastname airflow 
+        restart: on-failure
+    
+
+    airflow-webserver:
+        <<: *airflow-common
+        command: airflow webserver
+        ports:
+        - 8080:8080
+        container_name: airflow_webserver
+        restart: always
+
+    airflow-scheduler:
+        <<: *airflow-common
+        command: airflow scheduler
+        container_name: airflow_scheduler
+        restart: always
+
+    airflow-worker:
+        <<: *airflow-common
+        restart: always
+        command: airflow celery worker
+        container_name: airflow_celery_worker
+    
+    airflow-flower:
+        <<: *airflow-common
+        restart: always
+        command: airflow celery flower
+        ports:
+            - 5555:5555
+        container_name: airflow_celery_flower
+        
