@@ -1,7 +1,9 @@
 version: "3"
 x-airflow-common:
     &airflow-common
-    build: ./Docker/airflow-celery-image/.
+    build: 
+        context: .
+        dockerfile: ./Docker/airflow-celery-image/Dockerfile
     environment:
         - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
         - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow

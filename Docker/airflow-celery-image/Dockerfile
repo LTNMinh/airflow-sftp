@@ -1,2 +1,3 @@
-FROM apache/airflow:2.9.0
-RUN pip install apache-airflow-providers-celery>=3.3.0
+FROM apache/airflow:latest
+COPY ./requirements.txt .
+RUN pip install -r requirements.txt --no-cache-dir
