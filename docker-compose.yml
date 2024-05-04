@@ -65,8 +65,12 @@ services:
             --password airflow
             --email airflow@airflow.com
             --firstname airflow
-            --lastname airflow 
-        restart: on-failure
+            --lastname airflow  &&
+            airflow connections add 'my_source_sftp' 
+                --conn-uri 'sftp://airflow:airflow@source:22/home/airflow/upload' &&
+            airflow connections add 'my_target_sftp' 
+                --conn-uri 'sftp://airflow:airflow@target:22/home/airflow/upload'
+    
     
 
     airflow-webserver:

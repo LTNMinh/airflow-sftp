@@ -1,2 +1,2 @@
-apache-airflow-providers-celery>=3.3.0
-pysftp
+apache-airflow-providers-celery
+apache-airflow-providers-sftp
