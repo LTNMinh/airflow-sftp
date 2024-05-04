@@ -94,4 +94,21 @@ services:
         ports:
             - 5555:5555
         container_name: airflow_celery_flower
+
+    source:
+        image: atmoz/sftp
+        container_name: sftp_source
+        volumes:
+            - ./sftp/source:/home/airflow/upload
+        ports:
+            - "2222:22"
+        command: airflow:airflow:1001
         
+    target:
+        image: atmoz/sftp
+        container_name: sftp_target
+        volumes:
+            - ./sftp/target:/home/airflow/upload
+        ports:
+            - "2233:22"
+        command: airflow:airflow:1001

@@ -162,3 +162,10 @@ cython_debug/
 
 airflow-data/*
 !airflow-data/.gitkeep
+
+sftp/target/*
+sftp/source/*
+
+!sftp/source/.gitkeep
+!sftp/target/.gitkeep
+
