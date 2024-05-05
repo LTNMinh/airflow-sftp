@@ -10,6 +10,7 @@ python = ">=3.11,<3.13"
 apache-airflow="^2.9.0"
 apache-airflow-providers-celery = "^3.6.2"
 apache-airflow-providers-sftp = "^4.9.1"
+ruff = "^0.4.3"
 
 
 [build-system]

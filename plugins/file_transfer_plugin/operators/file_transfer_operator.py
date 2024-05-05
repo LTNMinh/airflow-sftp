@@ -1,3 +1,5 @@
+from typing import Any
+
 import paramiko
 from airflow.models import BaseOperator
 from airflow.providers.sftp.hooks.sftp import SFTPHook
@@ -6,11 +8,34 @@ from airflow.utils.decorators import apply_defaults
 
 class FileTransferOperator(BaseOperator):
     """
-        File Transfer Custom Operator
+    File Transfer Custom Operator
+
+    Transfer files from source SFTP server to target SFTP server
+
     """
 
     @apply_defaults
-    def __init__(self, source_conn_id,target_conn_id, folder_path,pattern_matching= "*",maximum_size_in_bytes = 1000, *args, **kwargs):
+    def __init__(
+        self,
+        source_conn_id: str,
+        target_conn_id: str,
+        folder_path: str,
+        pattern_matching: str = "*",
+        maximum_size_in_bytes: int = 1000,
+        *args,
+        **kwargs,
+    ):
+        """
+            File transfer initialization
+
+        Args:
+            source_conn_id (str): source connection id provide by Airflow
+            target_conn_id (str): target connection id provide by Airflow
+            folder_path (str): folder path matching
+            pattern_matching (str, optional): regex pattern to find a file. Defaults to "*".
+            maximum_size_in_bytes (int, optional): maximum_size_in_bytes to loads from source to destination. Defaults to 1000.
+        """
+
         super(FileTransferOperator, self).__init__(*args, **kwargs)
         self.sftp_source = SFTPHook(source_conn_id)
         self.sftp_target = SFTPHook(target_conn_id)
@@ -18,73 +43,93 @@ class FileTransferOperator(BaseOperator):
         self.folder_path = folder_path
         self.pattern_matching = pattern_matching
 
-    def execute(self, context):
+    def execute(self, context: dict):
         """
-            Executes the operator
+        Executes the operator
+
+        Args:
+            context (dict): Airflow context
         """
 
         diff_files = self._get_difference_files()
         self._transfer_files(diff_files)
 
-        self.log.info("Hello, Airflow!")
-
-    def _get_difference_files(self):
+    def _get_difference_files(self) -> list | list[str]:
         """
-            Get the list of files from the source SFTP server
+        Get the list of files from the source SFTP server
+
+        Returns:
+            list of difference files
         """
 
         self.log.info("Getting list of files from source SFTP server")
-        
-        if (not self.sftp_source.path_exists(self.folder_path)):
+
+        if not self.sftp_source.path_exists(self.folder_path):
             self.log.info("No path found in the source folder")
             return []
 
-        #TODO Problem when dir have very large number of small files
+        # TODO Problem when dir have very large number of small files
         files_attribute = self.sftp_source.describe_directory(self.folder_path)
         self.log.info(f"Files found in the source folder {files_attribute}")
-        
-        
-        source_files = self.sftp_source.get_files_by_pattern(self.folder_path,self.pattern_matching)
-        target_files = self.sftp_target.get_files_by_pattern(self.folder_path,self.pattern_matching)
 
-    
+        source_files = self.sftp_source.get_files_by_pattern(
+            self.folder_path, self.pattern_matching
+        )
+        target_files = self.sftp_target.get_files_by_pattern(
+            self.folder_path, self.pattern_matching
+        )
+
         diff_files = list(set(source_files) - set(target_files))
         self.log.info(f"Differences files found in the source folder {diff_files}")
 
-        #TODO Problem when dir have very large files
-        #TODO To scale with other method
-        self._check_file_size(diff_files,files_attribute)
+        # TODO Problem when dir have very large files
+        # TODO To scale with other method
+        self._check_file_size(diff_files, files_attribute)
 
         return diff_files
-    
-    def _check_file_size(self, files,files_attribute):
+
+    def _check_file_size(
+        self, files: list[str], files_attribute: dict[str, Any]
+    ) -> None:
         """
-            Validation file size before transfer
+        Validation size of files before transfer
+
+        Args:
+            files list[str]: List of files to check
+            files_attribute dict[str, Any]: files attribute. including size, modified time, etc.
+                    {
+                        '.gitkeep': {'size': 0, 'type': 'file', 'modify': '20240504101853'},
+                        'hello.txt': {'size': 71, 'type': 'file', 'modify': '20240505075017'}
+                    }
         """
 
         for f in files:
-            fbytes = files_attribute[f]['size']
+            fbytes = files_attribute[f]["size"]
             if fbytes > self.maximum_size_in_bytes:
-                self.log.warning(f"File {f} is larger than {self.maximum_size_in_bytes} bytes. {files_attribute[f]}")
-        
-        return 
-    
-    def _transfer_files(self, files):
+                self.log.warning(
+                    f"File {f} is larger than {self.maximum_size_in_bytes} bytes. {files_attribute[f]}"
+                )
+
+        return
+
+    def _transfer_files(self, files: list[str]) -> None:
         """
-            Transfer files from source to target
+            Transfer file from source to target
+        Args:
+            files (list[str]): list of file to transfer
         """
 
         for f in files:
             source_conn: paramiko.SFTPClient = self.sftp_source.get_conn()
             target_conn: paramiko.SFTPClient = self.sftp_target.get_conn()
 
-            with (source_conn.open(f"{self.folder_path}/{f}",'r') as source_file,
-                target_conn.open(f"{self.folder_path}/{f}",'w') as target_file,
+            with (
+                source_conn.open(f"{self.folder_path}/{f}", "r") as source_file,
+                target_conn.open(f"{self.folder_path}/{f}", "w") as target_file,
             ):
-                while True:  
+                while True:
                     source_line = source_file.readline()
                     self.log.info(source_line)
                     if len(source_line) == 0:
                         break
                     target_file.write(source_line)
-            pass
