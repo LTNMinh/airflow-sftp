@@ -23,6 +23,15 @@ x-airflow-common:
         postgres:
             condition: service_healthy
 
+x-celery-common: 
+    &celery-common
+    build:
+        context: .
+        dockerfile: ./Docker/celery-taskqueue-image/Dockerfile
+    depends_on:
+        redis:
+            condition: service_healthy
+
 
 services:
     redis:
@@ -93,14 +102,6 @@ services:
         command: airflow celery worker
         container_name: airflow_celery_worker
     
-    airflow-flower:
-        <<: *airflow-common
-        restart: always
-        command: airflow celery flower
-        ports:
-            - 5555:5555
-        container_name: airflow_celery_flower
-
     source:
         image: atmoz/sftp
         container_name: sftp_source
@@ -118,3 +119,17 @@ services:
         ports:
             - "2233:22"
         command: airflow:airflow:1001
+
+    celery-task-queue:
+        <<: *celery-common
+        container_name: celery_task_queue
+        command: celery -A tasks worker --loglevel=info
+
+    flower:
+        <<: *celery-common
+        container_name: flower
+        command: celery -A tasks flower --port=5555
+        ports:
+            - 5555:5555
+        
+        
