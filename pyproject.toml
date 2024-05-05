@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "airflow-sftp"
+version = "0.1.0"
+description = ""
+authors = ["minh.le <ltnminh1993@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+apache-airflow="^2.9.0"
+apache-airflow-providers-celery = "^3.6.2"
+apache-airflow-providers-sftp = "^4.9.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
