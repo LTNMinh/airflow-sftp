@@ -5,6 +5,8 @@ from airflow.models import BaseOperator
 from airflow.providers.sftp.hooks.sftp import SFTPHook
 from airflow.utils.decorators import apply_defaults
 
+from file_transfer_plugin.hooks.sftp_hook import CustomSTFPHook
+
 
 class FileTransferOperator(BaseOperator):
     """
@@ -37,8 +39,8 @@ class FileTransferOperator(BaseOperator):
         """
 
         super(FileTransferOperator, self).__init__(*args, **kwargs)
-        self.sftp_source = SFTPHook(source_conn_id)
-        self.sftp_target = SFTPHook(target_conn_id)
+        self.sftp_source = CustomSTFPHook(source_conn_id)
+        self.sftp_target = CustomSTFPHook(target_conn_id)
         self.maximum_size_in_bytes = maximum_size_in_bytes
         self.folder_path = folder_path
         self.pattern_matching = pattern_matching
@@ -61,8 +63,6 @@ class FileTransferOperator(BaseOperator):
         Returns:
             list of difference files
         """
-
-        self.log.info("Getting list of files from source SFTP server")
 
         if not self.sftp_source.path_exists(self.folder_path):
             self.log.info("No path found in the source folder")
@@ -120,12 +120,9 @@ class FileTransferOperator(BaseOperator):
         """
 
         for f in files:
-            source_conn: paramiko.SFTPClient = self.sftp_source.get_conn()
-            target_conn: paramiko.SFTPClient = self.sftp_target.get_conn()
-
             with (
-                source_conn.open(f"{self.folder_path}/{f}", "r") as source_file,
-                target_conn.open(f"{self.folder_path}/{f}", "w") as target_file,
+                self.sftp_source.open(f"{self.folder_path}/{f}", "r") as source_file,
+                self.sftp_target.open(f"{self.folder_path}/{f}", "w") as target_file,
             ):
                 while True:
                     source_line = source_file.readline()
