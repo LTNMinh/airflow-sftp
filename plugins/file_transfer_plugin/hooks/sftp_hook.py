@@ -1,8 +1,10 @@
 from airflow.providers.sftp.hooks.sftp import SFTPHook
 from paramiko import SFTPFile
 
+from file_transfer_plugin.hooks import FileSystemHook
 
-class CustomSTFPHook(SFTPHook):
+
+class CustomSTFPHook(SFTPHook, FileSystemHook):
     """Custome SFTP Hook inherited from airflow.providers.sftp.hooks.sftp.SFTPHook
 
     Expand read stream for SFTP
@@ -25,4 +27,4 @@ class CustomSTFPHook(SFTPHook):
         return conn.open(f, mode)
 
     def to_uri(self):
-        return f"ssh://{self.username}:{self.password}@{self.remote_host}:{self.port}"
+        return f"sftp://{self.username}:{self.password}@{self.remote_host}:{self.port}"

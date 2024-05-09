@@ -36,6 +36,7 @@ class FileTransferOperator(BaseOperator):
         """
 
         super(FileTransferOperator, self).__init__(*args, **kwargs)
+
         self.sftp_source = CustomSTFPHook(source_conn_id)
         self.sftp_target = CustomSTFPHook(target_conn_id)
         self.maximum_size_in_bytes = maximum_size_in_bytes
