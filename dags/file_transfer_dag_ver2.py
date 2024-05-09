@@ -15,10 +15,10 @@ def print_hello():
 
 
 dag = DAG(
-    "file_transfer_taskqueue",
-    description="File Transfer",
-    schedule_interval="0 12 * * *",
-    start_date=datetime(2017, 3, 20),
+    "file_transfer_ver_2",
+    description="File Transfer Version 2",
+    schedule_interval="0 1 * * *",
+    start_date=datetime(2024, 3, 1),
     catchup=False,
 )
 
