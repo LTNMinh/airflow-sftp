@@ -1,5 +1,5 @@
 BROKER_URL = "redis://redis:6379/1"
-CELERY_RESULT_BACKEND = BROKER_URL
+CELERY_RESULT_BACKEND = "redis://redis:6379/1"
 
 # json serializer is more secure than the default pickle
 CELERY_TASK_SERIALIZER = "json"

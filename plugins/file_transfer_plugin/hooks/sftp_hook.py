@@ -23,3 +23,6 @@ class CustomSTFPHook(SFTPHook):
     def open(self, f: str, mode: str = "r") -> SFTPFile:
         conn = self.get_conn()
         return conn.open(f, mode)
+
+    def to_uri(self):
+        return f"ssh://{self.username}:{self.password}@{self.remote_host}:{self.port}"

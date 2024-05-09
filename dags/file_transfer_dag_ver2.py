@@ -1,9 +1,7 @@
 from datetime import datetime
 
 from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.python_operator import PythonOperator
-from file_transfer_plugin import FileTransferOperator
+from file_transfer_plugin import CeleryFileTransferOperator
 
 
 def print_hello():
@@ -13,7 +11,7 @@ def print_hello():
     app = Celery("tasks", backend="redis://redis:6379/1", broker="redis://redis:6379/1")
 
     with allow_join_result():
-        return app.send_task("tasks.add", args=[2, 2]).get()
+        return app.send_task("tasks.transfer_file", args=[2, 2]).get()
 
 
 dag = DAG(
@@ -25,8 +23,12 @@ dag = DAG(
 )
 
 with dag:
-    dummy_operator = DummyOperator(task_id="dummy_task", retries=3)
+    my_file_transfer = CeleryFileTransferOperator(
+        source_conn_id="my_source_sftp",
+        target_conn_id="my_target_sftp",
+        folder_path="upload/",
+        pattern_matching="*",
+        task_id="file_transfer",
+    )
 
-    python_op = PythonOperator(task_id="print_hello", python_callable=print_hello)
-
-    dummy_operator >> python_op
+    my_file_transfer
