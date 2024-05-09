@@ -1,0 +1,13 @@
+{
+    "python.analysis.extraPaths": ["./plugins"],
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file",
+        "editor.formatOnType": true,
+        "editor.semanticHighlighting.enabled": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+    },
+}
