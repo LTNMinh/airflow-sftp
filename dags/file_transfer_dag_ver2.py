@@ -3,17 +3,6 @@ from datetime import datetime
 from airflow import DAG
 from file_transfer_plugin import CeleryFileTransferOperator
 
-
-def print_hello():
-    from celery import Celery
-    from celery.result import allow_join_result
-
-    app = Celery("tasks", backend="redis://redis:6379/1", broker="redis://redis:6379/1")
-
-    with allow_join_result():
-        return app.send_task("tasks.transfer_file", args=[2, 2]).get()
-
-
 dag = DAG(
     "file_transfer_ver_2",
     description="File Transfer Version 2",
