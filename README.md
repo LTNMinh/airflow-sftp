@@ -56,8 +56,8 @@ This operator will flaws when we have large number of files + files that have la
 ![2](images/airflow_2.png)
 
 
-This is an attempt to solving larges number of file problem
-- In this project, I used Celery as TaskQueue (another celery server not Airflow) to showing how we could dedicated small transfer task for another TaskQueue like system. 
+This is an attempt to solve larges number of file problem
+- In this project, I used Celery as TaskQueue (another celery server not Airflow) to show how we could dedicated small transfer task for another TaskQueue system. 
 - In realitiy, we could apply this pattern for any kind of TaskQueue / or custom server API. 
 
 `Note: I do not prefer to use dynamic dags because it will break the structure of DAG day by day. Therefore very hard to monitor. `
@@ -65,7 +65,7 @@ This is an attempt to solving larges number of file problem
 ### 3. Breakdown file when large.
 TODO: Code
 
-This is an attempt to solving large file problem
+This is an attempt to solve large file problem
 - The large file will be divided into small one and processed like two difference files in pipeline. 
 - E.g: file_1.txt = 1G. We will divide into 100MB chunks: 
 file_1_.txt.divided.000001, ... , file_1_.txt.divided.000010
