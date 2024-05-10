@@ -1,6 +1,6 @@
 from airflow.models.connection import Connection
-from hooks import FileSystemHook
-from hooks.sftp_hook import CustomSTFPHook
+from file_transfer_plugin.hooks import FileSystemHook
+from file_transfer_plugin.hooks.sftp_hook import CustomSTFPHook
 
 
 def file_system_hook_factory(conn_id) -> FileSystemHook:
