@@ -1,5 +1,4 @@
 # airflow-sftp
-
 ## Requirement 
 - docker
 - poetry 
@@ -44,6 +43,8 @@ Test for sftp server
 ## Functional Requirement 
 
 ### 1. Pure Airflow Operator
+![1](images/airflow_1.png)
+
 In file `dags/file_transfer_dag.py`
 Operator FileTransferOperator in `plugins/file_transfer_plugin/operators/file_transfer_operator.py`
 
@@ -52,6 +53,9 @@ This is a basis Operator in Airflow to solving minimize problems transfer from s
 This operator will flaws when we have large number of files + files that have larges. If this happen Airflow Executor will face I/O blocking task and on hold all queue task until this operator resolve.
 
 ### 2. Breakdown number of file and Another Operator for dedicated transfer task
+![2](images/airflow_2.png)
+
+
 This is an attempt to solving larges number of file problem
 - In this project, I used Celery as TaskQueue (another celery server not Airflow) to showing how we could dedicated small transfer task for another TaskQueue like system. 
 - In realitiy, we could apply this pattern for any kind of TaskQueue / or custom server API. 
